@@ -2,10 +2,13 @@ import geopandas as gpd
 import fiona
 import matplotlib.pyplot as plt
 import xmltodict
+import folium
+import webbrowser
 from shapely.geometry import Polygon, Point, MultiPolygon, shape
 from urllib.request import urlopen
 from zipfile import ZipFile
 from io import BytesIO
+
 
 # Aqui va el link
 LINK = "http://www.nhc.noaa.gov/gis/kml/nhc_active.kml"
@@ -106,8 +109,7 @@ def convert_3D_2D(geometry):
 
 
 # Lee todos los KML y los convierte en polygonos
-def read_all_kml(hurrican_kml):
-    gdf_hurrican = read_kml(hurrican_kml)
+def read_all_kml(gdf):
     poly_hurrican = []
     for p in gdf_hurrican.geometry:
         if p.geom_type == 'Polygon':
@@ -139,10 +141,22 @@ def graphHurrican(poly, point):
     plt.show()
 
 
+
 # Programa principal
 if __name__ == "__main__":
     wsp = scrap()
-    poly = read_all_kml(wsp["wsp34"]["kml"])
+    gdf_hurrican = read_kml(wsp["wsp34"]["kml"])
+    poly = read_all_kml(gdf_hurrican)
     point = createPoint(GPS_POINT)
     print(isIntersecting(poly, point))
-    graphHurrican(poly, point)
+
+    mymmap = folium.Map(location=[19,-89],zoom_start=6,tiles=None)
+    folium.TileLayer("cartodbpositron").add_to(mymmap)
+    folium.TileLayer("openstreetmap").add_to(mymmap)
+    GT = gdf_hurrican.geometry.to_json()
+    sp = folium.features.GeoJson(GT,name='Cono')
+    mymmap.add_child(sp)
+    mymmap.add_child(folium.map.LayerControl())
+    mymmap.save('cono.html')
+    webbrowser.open('cono.html')
+    #graphHurrican(poly, point)
