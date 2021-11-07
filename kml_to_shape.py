@@ -151,8 +151,13 @@ if __name__ == "__main__":
     print(isIntersecting(poly, point))
 
     mymmap = folium.Map(location=[19,-89],zoom_start=6,tiles=None)
-    folium.TileLayer("cartodbpositron").add_to(mymmap)
+    folium.TileLayer("stamenterrain").add_to(mymmap)
     folium.TileLayer("openstreetmap").add_to(mymmap)
+    text_dist = 'La distancia es de: ' + str(poly[0].exterior.distance(point)) + ' km'
+    folium.Marker(
+        location=[point.x, point.y],
+        popup="<stong>Aqui estoy</stong>",
+        tooltip=text_dist).add_to(mymmap)
     GT = gdf_hurrican.geometry.to_json()
     sp = folium.features.GeoJson(GT,name='Cono')
     mymmap.add_child(sp)
